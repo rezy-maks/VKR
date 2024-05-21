@@ -8,10 +8,10 @@ struct atom {
     int x;
     int y;
     int z;
-    double probability;  // Четвертое поле - вероятность
+    double probability; 
 };
 
-// Функция для инициализации вектора точками куба
+// Функция для инициализации вектора
 std::vector<atom> initialize_structure(int xSize, int ySize, int zSize);
 
 #endif // INITIALIZE_STRUCTURE_H
