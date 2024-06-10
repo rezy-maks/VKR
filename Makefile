@@ -1,32 +1,57 @@
-CC = g++
-CFLAGS = -std=c++11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude
+# Название исполняемого файла
+TARGET = bin/main_program
 
-SRCDIR = src
-INCDIR = include
-BUILDDIR = build
-TARGETDIR = bin
+# Директории
+SRC_DIR = src
+BUILD_DIR = build
+BIN_DIR = bin
+INCLUDE_DIR = include
 
-TARGET_EXEC = main
-SOURCES := $(wildcard $(SRCDIR)/*.cpp)
-INCLUDES := $(wildcard $(INCDIR)/*.h)
-OBJECTS := $(SOURCES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
-TARGET := $(TARGETDIR)/$(TARGET_EXEC)
+# Файлы исходного кода
+SRCS = $(wildcard $(SRC_DIR)/*.cpp)
 
-$(TARGET): $(OBJECTS)
-	@mkdir -p $(TARGETDIR)
-	$(CC) $(OBJECTS) -o $(TARGET) $(CFLAGS)
+# Файлы объектных модулей
+OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp $(INCLUDES)
-	@mkdir -p $(BUILDDIR)
-	$(CC) -c $< -o $@ $(CFLAGS)
+# Флаги компилятора
+CXX = g++
+CXXFLAGS = -fopenmp -Wall -Wextra -O2 -I$(INCLUDE_DIR)
 
-.PHONY: clean
+# Флаги для создания динамических библиотек
+SOFLAGS = -fPIC -shared -fopenmp
+
+# Библиотеки
+LIBS = -ldl -fopenmp
+
+# Компиляция и линковка исполняемого файла
+$(TARGET): $(OBJS) $(BIN_DIR)/libdata.so | $(BIN_DIR)
+	$(CXX) -o $@ $(OBJS) $(LIBS)
+
+# Компиляция объектных файлов
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Создание папки для объектных файлов (если еще не существует)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# Создание бинарной папки (если еще не существует)
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+# Создание динамической библиотеки
+$(BIN_DIR)/libdata.so: $(BUILD_DIR)/my_data_structure.o | $(BIN_DIR)
+	$(CXX) $(SOFLAGS) -o $@ $<
+
+# Удаление скомпилированных файлов
 clean:
-	rm -rf $(BUILDDIR) $(TARGETDIR)
+	rm -f $(TARGET) $(OBJS) $(BIN_DIR)/libdata.so
 
-.PHONY: run
-run: $(TARGET)
-	./$(TARGET)
+# Компиляция динамических библиотек и основного файла
+all: $(TARGET)
 
-.PHONY: all
-all: clean $(TARGET)
+# Перекомпиляция проекта
+rebuild: clean all
+
+# Установка цели по умолчанию
+.PHONY: all clean rebuild
