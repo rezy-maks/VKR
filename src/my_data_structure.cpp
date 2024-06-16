@@ -44,13 +44,30 @@ public:
     }
 
     double algorithm() override {
-        double total_probability = 0.0;
-        #pragma omp parallel for reduction(+:total_probability)
-        for (size_t i = 0; i < crystal.size(); ++i) {
-            total_probability += crystal[i].probability;
-        }
-        return total_probability;
+        int num_threads = omp_get_max_threads();
+        std::vector<double> local_sums(num_threads, 0.0);
+
+        #pragma omp parallel
+        {
+            int thread_id = omp_get_thread_num();
+            double local_sum = 0.0;
+
+            #pragma omp for
+            for (size_t i = 0; i < crystal.size(); ++i) {
+                local_sum += crystal[i].probability;
+            }
+
+        local_sums[thread_id] = local_sum;
     }
+
+    double total_probability = 0.0;
+    for (double sum : local_sums) {
+        total_probability += sum;
+    }
+
+    return total_probability;
+}
+
 };
 
 extern "C" DataStructure<double>* create_data_structure() {

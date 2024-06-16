@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
         double avg_elapsed_time = total_elapsed_time / iterations;
 
         results << std::setw(10) << num_threads << std::setw(15) << avg_elapsed_time << "\n";
-        std::cout << std::setw(10) << "Threads: " << num_threads << std::setw(15) << "Avg Exec Time: " << avg_elapsed_time << " seconds" << std::endl;
+        std::cout << std::setw(10) << "Threads: " << num_threads << std::setw(15) << "; Avg Exec Time: " << avg_elapsed_time << " seconds" << std::endl;
     }
 
     results.close();
