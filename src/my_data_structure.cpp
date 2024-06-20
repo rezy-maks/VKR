@@ -43,13 +43,15 @@ public:
         }
     }
 
-    double algorithm() override {
-        int num_threads = omp_get_max_threads();
-        std::vector<double> local_sums(num_threads, 0.0);
+    double algorithm(int num_threads_o) override {
+        std::vector<double> local_sums(num_threads_o, 0.0);
+        omp_set_num_threads(num_threads_o);
 
-        #pragma omp parallel
+        #pragma omp parallel num_threads(num_threads_o)
         {
+            //std::cout << "Threads: " << num_threads << std::endl;
             int thread_id = omp_get_thread_num();
+            //std::cout << " Threads: " << num_threads_o<< "; Thread ID: " << thread_id << std::endl;
             double local_sum = 0.0;
 
             #pragma omp for
@@ -58,6 +60,7 @@ public:
             }
 
         local_sums[thread_id] = local_sum;
+        //std::cout << "Threads: " << num_threads<< "; Local sums: " << local_sums[thread_id] << std::endl;
     }
 
     double total_probability = 0.0;

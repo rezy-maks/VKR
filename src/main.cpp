@@ -17,13 +17,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int iterations = 100;
+    int iterations = 20;
     int xSize = 100, ySize = 100, zSize = 100;
     std::string data_structure_file = argv[1];
     int max_threads = omp_get_max_threads();
 
     // Компиляция файла
-    std::string compile_command = "g++ -fPIC -shared -o libdata.so " + data_structure_file;
+    std::string compile_command = "g++ -fPIC -shared -fopenmp -o libdata.so " + data_structure_file;
     
     if (std::system(compile_command.c_str()) != 0) {
         std::cerr << "Compilation failed!" << std::endl;
@@ -63,26 +63,26 @@ int main(int argc, char* argv[]) {
 
     results << std::setw(10) << "Threads" << std::setw(15) << "Time" << "\n";
 
+    // Инициализация структуры
+    data_structure->initialize(xSize, ySize, zSize);
+
     for (int num_threads = 1; num_threads <= max_threads; num_threads++) {
         double total_elapsed_time = 0.0;
+        //double total_result = 0.0;
 
         for (int iter = 0; iter < iterations; ++iter) {
-            omp_set_num_threads(num_threads);
-
-            // Инициализация структуры
-            data_structure->initialize(xSize, ySize, zSize);
 
             double start_time = omp_get_wtime();
-            
             // Выполнение алгоритма
-            double total_result = data_structure->algorithm();
+            double total_result = data_structure->algorithm(num_threads);
             
             double end_time = omp_get_wtime();
+            
             double elapsed_time = end_time - start_time;
 
             total_elapsed_time += elapsed_time;
         }
-
+        //std::cout << std::setw(10) << "Threads: " << num_threads << std::setw(15) << "; Result: " << total_result << std::endl;
         double avg_elapsed_time = total_elapsed_time / iterations;
 
         results << std::setw(10) << num_threads << std::setw(15) << avg_elapsed_time << "\n";
