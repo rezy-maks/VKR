@@ -12,14 +12,16 @@ template<typename T>
 using create_func = DataStructure<T>* (*)();
 
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <data_structure_and_algorithm_file>" << std::endl;
+    if (argc != 5) {
+        std::cerr << "Usage: " << argv[0] << " <data_structure_and_algorithm_file> <xSize> <ySize> <zSize>" << std::endl;
         return 1;
     }
 
-    int iterations = 20;
-    int xSize = 100, ySize = 100, zSize = 100;
+    int iterations = 10;
     std::string data_structure_file = argv[1];
+    int xSize = std::atoi(argv[2]);
+    int ySize = std::atoi(argv[3]);
+    int zSize = std::atoi(argv[4]);
     int max_threads = omp_get_max_threads();
 
     // Компиляция файла
